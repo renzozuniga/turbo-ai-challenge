@@ -1,26 +1,38 @@
-async function getBackendHealth() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/health/`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
+"use client";
 
-export default async function Home() {
-  const health = await getBackendHealth();
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/lib/auth-context";
+
+export default function Home() {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [loading, user, router]);
+
+  if (loading || !user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p>Loading…</p>
+      </main>
+    );
+  }
 
   return (
-    <main style={{ padding: "3rem", maxWidth: 640, margin: "0 auto" }}>
-      <h1>Turbo AI Challenge</h1>
-      <p>Django backend + Next.js frontend starter.</p>
-      <p>
-        Backend health check:{" "}
-        <strong>{health ? health.status : "unreachable"}</strong>
-      </p>
+    <main className="mx-auto max-w-xl p-12">
+      <h1 className="font-display text-3xl">Notes</h1>
+      <p className="mt-4">Signed in as {user.email}</p>
+      <button
+        onClick={() => logout()}
+        className="mt-6 rounded-full border border-ink/30 px-4 py-2 text-sm font-semibold"
+      >
+        Log out
+      </button>
     </main>
   );
 }

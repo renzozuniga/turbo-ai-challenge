@@ -28,6 +28,10 @@ services:
       - "8000:8000"
     env_file:
       - ./apps/backend/.env
+    environment:
+      # Next's rewrite proxy forwards Host: backend:8000 when it proxies
+      # server-side from the frontend container, so Django must allow it.
+      ALLOWED_HOSTS: localhost,127.0.0.1,backend
     depends_on:
       db:
         condition: service_healthy
@@ -44,6 +48,11 @@ services:
       - "3000:3000"
     env_file:
       - ./apps/frontend/.env
+    environment:
+      # Overrides apps/frontend/.env's API_URL for this container: the rewrite
+      # proxy runs server-side inside this container, so it must reach the
+      # backend via the Docker service name, not "localhost".
+      API_URL: http://backend:8000
     depends_on:
       - backend
 

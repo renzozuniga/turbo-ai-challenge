@@ -1,5 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-inria-serif), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-cream: #faf1e3;
+  --color-ink: #000000;
+  --color-heading: #88642a;
+  --color-accent: #957139;
+
+  --color-category-random-thoughts: #e7a977;
+  --color-category-school: #e8d48a;
+  --color-category-personal: #9dbfae;
+  --color-category-drama: #c9d6a3;
+}
+
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
 * {
@@ -8,5 +25,5 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
 }
