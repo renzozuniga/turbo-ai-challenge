@@ -8,7 +8,7 @@ interface SidebarProps {
 
 export function Sidebar({ categories, activeCategoryId, onSelectCategory }: SidebarProps) {
   return (
-    <aside className="w-[256px] shrink-0">
+    <aside className="w-full shrink-0 md:w-[256px]">
       <button
         type="button"
         onClick={() => onSelectCategory(null)}

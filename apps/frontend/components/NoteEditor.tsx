@@ -26,21 +26,30 @@ export function NoteEditor({ categories, note, onClose }: NoteEditorProps) {
   const [categoryId, setCategoryId] = useState<number | null>(note?.category.id ?? categories[0]?.id ?? null);
   const [title, setTitle] = useState(note?.title ?? "");
   const [content, setContent] = useState(note?.content ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedCategory = categories.find((c) => c.id === categoryId) ?? note?.category;
 
   async function handleClose() {
     const trimmedTitle = title.trim();
     const trimmedContent = content.trim();
+    setError(null);
+    setSaving(true);
 
-    if (isCreate) {
-      if (trimmedTitle || trimmedContent) {
-        await api.post("/notes/", { title: trimmedTitle, content: trimmedContent, category_id: categoryId });
+    try {
+      if (isCreate) {
+        if (trimmedTitle || trimmedContent) {
+          await api.post("/notes/", { title: trimmedTitle, content: trimmedContent, category_id: categoryId });
+        }
+      } else if (note && (trimmedTitle !== note.title || trimmedContent !== note.content)) {
+        await api.patch(`/notes/${note.id}/`, { title: trimmedTitle, content: trimmedContent });
       }
-    } else if (note && (trimmedTitle !== note.title || trimmedContent !== note.content)) {
-      await api.patch(`/notes/${note.id}/`, { title: trimmedTitle, content: trimmedContent });
+      onClose();
+    } catch {
+      setSaving(false);
+      setError("Couldn't save this note. Please try again.");
     }
-    onClose();
   }
 
   return (
@@ -51,10 +60,25 @@ export function NoteEditor({ categories, note, onClose }: NoteEditorProps) {
         ) : (
           <span />
         )}
-        <button type="button" onClick={handleClose} className="text-ink" aria-label="Close">
+        <button
+          type="button"
+          onClick={handleClose}
+          disabled={saving}
+          className="text-ink disabled:opacity-50"
+          aria-label="Close"
+        >
           <CloseIcon />
         </button>
       </div>
+
+      {error && (
+        <p className="mt-2 text-right font-sans text-xs font-semibold text-red-700">
+          {error}{" "}
+          <button type="button" onClick={handleClose} className="underline">
+            Retry
+          </button>
+        </p>
+      )}
 
       <div className="relative mt-2 flex flex-1 flex-col">
         <div

@@ -21,6 +21,8 @@ export default function Home() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [editorMode, setEditorMode] = useState<EditorMode>(null);
+  const [notesLoading, setNotesLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,19 +30,36 @@ export default function Home() {
     }
   }, [loading, user, router]);
 
-  const refreshCategories = useCallback(() => {
+  const refreshCategories = useCallback(async () => {
     if (!user) return;
-    api.get<Category[]>("/categories/").then(setCategories);
+    try {
+      setCategories(await api.get<Category[]>("/categories/"));
+    } catch {
+      setDataError("Couldn't load your categories.");
+    }
   }, [user]);
 
-  const refreshNotes = useCallback(() => {
+  const refreshNotes = useCallback(async () => {
     if (!user) return;
-    const query = activeCategoryId ? `?category=${activeCategoryId}` : "";
-    api.get<Note[]>(`/notes/${query}`).then(setNotes);
+    setNotesLoading(true);
+    try {
+      const query = activeCategoryId ? `?category=${activeCategoryId}` : "";
+      setNotes(await api.get<Note[]>(`/notes/${query}`));
+      setDataError(null);
+    } catch {
+      setDataError("Couldn't load your notes.");
+    } finally {
+      setNotesLoading(false);
+    }
   }, [user, activeCategoryId]);
 
-  useEffect(refreshCategories, [refreshCategories]);
-  useEffect(refreshNotes, [refreshNotes]);
+  useEffect(() => {
+    refreshCategories();
+  }, [refreshCategories]);
+
+  useEffect(() => {
+    refreshNotes();
+  }, [refreshNotes]);
 
   if (loading || !user) {
     return (
@@ -62,15 +81,33 @@ export default function Home() {
         <NewNoteButton onClick={() => setEditorMode("create")} />
       </div>
 
-      <div className="mt-10 flex gap-8">
+      <div className="mt-10 flex flex-col gap-8 md:flex-row">
         <Sidebar categories={categories} activeCategoryId={activeCategoryId} onSelectCategory={setActiveCategoryId} />
 
-        {notes.length === 0 ? (
+        {dataError ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <p className="font-sans text-sm text-ink/70">{dataError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                refreshCategories();
+                refreshNotes();
+              }}
+              className="font-sans text-sm font-semibold text-accent underline"
+            >
+              Try again
+            </button>
+          </div>
+        ) : notesLoading ? (
+          <div className="flex flex-1 items-center justify-center">
+            <p className="font-sans text-sm text-ink/60">Loading notes…</p>
+          </div>
+        ) : notes.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <EmptyNotesState />
           </div>
         ) : (
-          <div className="grid flex-1 grid-cols-[repeat(auto-fill,303px)] gap-[13px]">
+          <div className="grid flex-1 grid-cols-[repeat(auto-fill,303px)] justify-center gap-[13px] md:justify-start">
             {notes.map((note) => (
               <NoteCard key={note.id} note={note} onClick={() => setEditorMode(note)} />
             ))}

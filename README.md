@@ -115,8 +115,7 @@ pipeline since it's a Python project, so run it separately as shown above).
 **`apps/frontend/.env`**
 | Variable | Purpose |
 |---|---|
-| `NEXT_PUBLIC_API_URL` | Backend base URL, used client- and server-side |
-| `API_URL` | Backend base URL used by the Next.js rewrite proxy (server-side only) |
+| `API_URL` | Backend base URL used by the Next.js API proxy route (server-side only — the browser never calls this directly) |
 
 ## Push to GitHub
 
@@ -152,8 +151,7 @@ git push -u origin main
 
 1. In Vercel, **Add New > Project**, import the same GitHub repo.
 2. Set **Root Directory** to `apps/frontend` (Vercel auto-detects Next.js from there).
-3. Add environment variables in the Vercel project settings:
-   - `NEXT_PUBLIC_API_URL` = your Render backend URL
+3. Add an environment variable in the Vercel project settings:
    - `API_URL` = your Render backend URL
 4. Deploy. Vercel gives you a URL like `https://your-project.vercel.app`.
 5. Go back to Render and set `CORS_ALLOWED_ORIGINS` to that Vercel URL, then redeploy the backend.
