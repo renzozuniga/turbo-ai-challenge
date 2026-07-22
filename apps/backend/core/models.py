@@ -6,10 +6,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 DEFAULT_CATEGORIES = [
-    ("Random Thoughts", "#E7A977"),
-    ("School", "#E8D48A"),
-    ("Personal", "#9DBFAE"),
-    ("Drama", "#C9D6A3"),
+    ("Random Thoughts", "#EF9C66"),
+    ("School", "#FCDC94"),
+    ("Personal", "#78ABA8"),
+    ("Drama", "#C8CFA0"),
 ]
 
 
