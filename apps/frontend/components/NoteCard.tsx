@@ -3,12 +3,15 @@ import type { Note } from "@/lib/types";
 
 interface NoteCardProps {
   note: Note;
+  onClick?: () => void;
 }
 
-export function NoteCard({ note }: NoteCardProps) {
+export function NoteCard({ note, onClick }: NoteCardProps) {
   return (
-    <div
-      className="flex h-[246px] w-[303px] flex-col gap-3 overflow-hidden rounded-[11px] border-[3px] p-4"
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-[246px] w-[303px] flex-col gap-3 overflow-hidden rounded-[11px] border-[3px] p-4 text-left"
       style={{
         backgroundColor: `${note.category.color}80`,
         borderColor: note.category.color,
@@ -20,6 +23,6 @@ export function NoteCard({ note }: NoteCardProps) {
       </div>
       <h3 className="font-display text-2xl font-bold text-ink">{note.title || "Untitled"}</h3>
       <p className="whitespace-pre-line font-sans text-xs font-normal text-ink">{note.content}</p>
-    </div>
+    </button>
   );
 }

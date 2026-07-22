@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { EmptyNotesState } from "@/components/EmptyNotesState";
 import { NewNoteButton } from "@/components/NewNoteButton";
 import { NoteCard } from "@/components/NoteCard";
+import { NoteEditor } from "@/components/NoteEditor";
 import { Sidebar } from "@/components/Sidebar";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import type { Category, Note } from "@/lib/types";
+
+type EditorMode = "create" | Note | null;
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -17,6 +20,7 @@ export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [editorMode, setEditorMode] = useState<EditorMode>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -24,16 +28,19 @@ export default function Home() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
+  const refreshCategories = useCallback(() => {
     if (!user) return;
     api.get<Category[]>("/categories/").then(setCategories);
   }, [user]);
 
-  useEffect(() => {
+  const refreshNotes = useCallback(() => {
     if (!user) return;
     const query = activeCategoryId ? `?category=${activeCategoryId}` : "";
     api.get<Note[]>(`/notes/${query}`).then(setNotes);
   }, [user, activeCategoryId]);
+
+  useEffect(refreshCategories, [refreshCategories]);
+  useEffect(refreshNotes, [refreshNotes]);
 
   if (loading || !user) {
     return (
@@ -43,10 +50,16 @@ export default function Home() {
     );
   }
 
+  function closeEditor() {
+    setEditorMode(null);
+    refreshCategories();
+    refreshNotes();
+  }
+
   return (
     <main className="min-h-screen p-5">
       <div className="flex justify-end">
-        <NewNoteButton />
+        <NewNoteButton onClick={() => setEditorMode("create")} />
       </div>
 
       <div className="mt-10 flex gap-8">
@@ -59,11 +72,19 @@ export default function Home() {
         ) : (
           <div className="grid flex-1 grid-cols-[repeat(auto-fill,303px)] gap-[13px]">
             {notes.map((note) => (
-              <NoteCard key={note.id} note={note} />
+              <NoteCard key={note.id} note={note} onClick={() => setEditorMode(note)} />
             ))}
           </div>
         )}
       </div>
+
+      {editorMode !== null && (
+        <NoteEditor
+          categories={categories}
+          note={editorMode === "create" ? null : editorMode}
+          onClose={closeEditor}
+        />
+      )}
     </main>
   );
 }
