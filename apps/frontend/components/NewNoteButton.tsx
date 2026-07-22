@@ -17,7 +17,7 @@ export function NewNoteButton({ onClick }: NewNoteButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className="relative top-[39px] right-[23px] flex h-[43px] w-[133px] shrink-0 items-center justify-center gap-[6px] rounded-[46px] border border-accent bg-[#95713933] px-4 py-3 rotate-0 opacity-100 font-sans text-base font-bold text-accent transition-colors hover:bg-white"
+      className="flex h-[43px] w-[133px] shrink-0 items-center justify-center gap-[6px] rounded-[46px] border border-accent bg-[#95713933] px-4 py-3 font-sans text-base font-bold text-accent transition-colors hover:bg-white"
     >
       <PlusIcon />
       New Note

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { EmptyNotesState } from "@/components/EmptyNotesState";
 import { NewNoteButton } from "@/components/NewNoteButton";
+import { NoteCard } from "@/components/NoteCard";
 import { Sidebar } from "@/components/Sidebar";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -15,6 +16,7 @@ export default function Home() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,8 +27,13 @@ export default function Home() {
   useEffect(() => {
     if (!user) return;
     api.get<Category[]>("/categories/").then(setCategories);
-    api.get<Note[]>("/notes/").then(setNotes);
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const query = activeCategoryId ? `?category=${activeCategoryId}` : "";
+    api.get<Note[]>(`/notes/${query}`).then(setNotes);
+  }, [user, activeCategoryId]);
 
   if (loading || !user) {
     return (
@@ -37,27 +44,25 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen gap-10 p-5">
-      <Sidebar categories={categories} />
+    <main className="min-h-screen p-5">
+      <div className="flex justify-end">
+        <NewNoteButton />
+      </div>
 
-      <div className="flex flex-1 flex-col">
-        <div className="flex justify-end">
-          <NewNoteButton />
-        </div>
+      <div className="mt-10 flex gap-8">
+        <Sidebar categories={categories} activeCategoryId={activeCategoryId} onSelectCategory={setActiveCategoryId} />
 
-        <div className="flex flex-1 items-center justify-center">
-          {notes.length === 0 ? (
+        {notes.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center">
             <EmptyNotesState />
-          ) : (
-            <ul className="w-full max-w-2xl space-y-2 self-start">
-              {notes.map((note) => (
-                <li key={note.id} className="rounded-lg border border-accent/20 p-3 text-sm">
-                  {note.title || "Untitled"}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="grid flex-1 grid-cols-[repeat(auto-fill,303px)] gap-[13px]">
+            {notes.map((note) => (
+              <NoteCard key={note.id} note={note} />
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );
